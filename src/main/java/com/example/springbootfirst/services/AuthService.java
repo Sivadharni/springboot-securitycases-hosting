@@ -1,6 +1,7 @@
 package com.example.springbootfirst.services;
 
 import com.example.springbootfirst.jwt.JwtTokenProvider;
+import com.example.springbootfirst.models.AuthResponse;
 import com.example.springbootfirst.models.RegisterDetails;
 import com.example.springbootfirst.models.Roles;
 import com.example.springbootfirst.models.UserDetailsDto;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -58,13 +60,23 @@ public class AuthService {
         return "Employee Added Successfully";
     }
 
-    public String authenticate(RegisterDetails login) {
-        Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                login.getUserName(),login.getPassword()));
-        return jwtTokenProvider.generateToken(authentication);
-    }
+   public AuthResponse authenticate(RegisterDetails login) {
+       Authentication authentication = authenticationManager.authenticate(
+               new UsernamePasswordAuthenticationToken(
+                       login.getUserName(), login.getPassword()
+               )
+       );
+       String token = jwtTokenProvider.generateToken(authentication);
+       RegisterDetails user = registerRepository.findByUserName(login.getUserName())
+               .orElseThrow(() -> new RuntimeException("User not found"));
+       Set<String> roleNames = user.getRoles()
+               .stream()
+               .map(role -> role.getRoleName())
+               .collect(Collectors.toSet());
+
+       return new AuthResponse(token, user.getUserName(), roleNames);
+
+   }
 
     public Optional<RegisterDetails> getUserByUsername(String username){
         return registerRepository.findByUserName(username);

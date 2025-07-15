@@ -1,5 +1,6 @@
 package com.example.springbootfirst.controllers;
 
+import com.example.springbootfirst.models.AuthResponse;
 import com.example.springbootfirst.models.RegisterDetails;
 import com.example.springbootfirst.models.UserDetailsDto;
 import com.example.springbootfirst.services.AuthService;
@@ -20,8 +21,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String Login(@RequestBody RegisterDetails login){
+    public AuthResponse login(@RequestBody RegisterDetails login){
         return authService.authenticate(login);
     }
 
+    public String Login(RegisterDetails login) {
+        return null;
+    }
 }

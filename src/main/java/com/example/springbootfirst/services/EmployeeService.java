@@ -91,7 +91,7 @@ public class EmployeeService {
         return "Employee Added Successfully";
     }
 
-    public List<RegisterDetails> getMethodMockito() {
+        public List<RegisterDetails> getMethodMockito() {
         return registerDetailsRepository.findAll();
     }
 
