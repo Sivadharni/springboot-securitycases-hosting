@@ -11,6 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDetailsDto {
+
     public String getName() {
         return name;
     }
