@@ -24,53 +24,45 @@ import java.util.List;
 @EnableMethodSecurity
 public class SpringConfiguration {
 
-  @Autowired
-  CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
 
-  @Autowired
-  JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public PasswordEncoder passwordEncoder(){
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/auth/**").permitAll();
+                    auth.anyRequest().authenticated();
+                })
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 
-  @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-            .csrf((csrf)->csrf.disable())
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(auth-> {
-              auth.requestMatchers("/api/auth/**").permitAll();
-              auth.anyRequest().authenticated();
-            })
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-    return http.build();
-  }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("http://localhost:5173", "https://springboot-securitycases-hosting-1.onrender.com"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource(){
-      CorsConfiguration config = new CorsConfiguration();
-      config.setAllowedOriginPatterns(List.of("http://localhost:5173",
-              "https://springboot-securitycases-hosting-1.onrender.com"));
-      config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"
-              ));
-      config.setAllowedHeaders(List.of("*"));
-      config.setAllowCredentials(true);
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**",config);
-      return source;
-  }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-  @Bean
-  public AuthenticationManager authenticationManager(
-          AuthenticationConfiguration configuration)
-          throws Exception {
-      return configuration.getAuthenticationManager();
-
-  }
-
-
-
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 }
